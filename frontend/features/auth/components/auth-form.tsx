@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { createAccount } from '@/features/users/actions'
 
 type AuthFormProps = {
   type: AuthFormType
@@ -27,6 +28,7 @@ type AuthFormProps = {
 export default function AuthForm({ type }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [accountId, setAccountId] = useState<string>('')
 
   const formSchema = authFormSchema(type)
 
@@ -36,7 +38,21 @@ export default function AuthForm({ type }: AuthFormProps) {
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+    setIsLoading(true)
+    setErrorMessage('')
+
+    try {
+      const user = await createAccount({
+        fullName: values.fullName ?? '',
+        email: values.email,
+      })
+
+      setAccountId(user.accountId)
+    } catch {
+      setErrorMessage('Failed to create account. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const isSignUp = type === AuthFormType.SIGN_UP
@@ -117,7 +133,7 @@ export default function AuthForm({ type }: AuthFormProps) {
               href={isSignUp ? '/sign-in' : '/sign-up'}
               className="ml-1 font-medium text-brand"
             >
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {isSignUp ? 'Sign In' : 'Sign Up'}
             </Link>
           </div>
         </form>
