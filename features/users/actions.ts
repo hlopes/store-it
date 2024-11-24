@@ -10,6 +10,11 @@ type createAccountArgs = {
   email: string
 }
 
+type verifySecretArgs = {
+  accountId: string
+  password: string
+}
+
 async function getUserByEmail(email: string) {
   const { databases } = await createAdminClient()
 
@@ -75,4 +80,13 @@ export async function createAccount({
   }
 
   return parseStringify({ accountId })
+}
+
+export async function verifySecret({accountId, password}:verifySecretArgs) {
+
+  try {
+
+  const {account} = await createAdminClient()
+  } catch()
+    handleEr
 }

@@ -20,6 +20,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { createAccount } from '@/features/users/actions'
+import { OTPModal } from '@/features/auth/components/otp-modal'
 
 type AuthFormProps = {
   type: AuthFormType
@@ -138,7 +139,9 @@ export default function AuthForm({ type }: AuthFormProps) {
           </div>
         </form>
       </Form>
-      OTP Verification
+      {true && (
+        <OTPModal email={form.getValues('email')} accountId={accountId} />
+      )}
     </>
   )
 }
