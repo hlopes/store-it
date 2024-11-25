@@ -41,6 +41,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true)
     setErrorMessage('')
+    setAccountId('')
 
     try {
       const user = await createAccount({
@@ -139,7 +140,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           </div>
         </form>
       </Form>
-      {true && (
+      {accountId && (
         <OTPModal email={form.getValues('email')} accountId={accountId} />
       )}
     </>

@@ -1,9 +1,12 @@
 'use server'
 
+import { cookies } from 'next/headers'
+import { ID, Models, Query } from 'node-appwrite'
+
 import { createAdminClient } from '@/lib/appwrite'
 import { appwriteConfig } from '@/lib/appwrite/config'
-import { ID, Query } from 'node-appwrite'
 import { parseStringify } from '@/lib/utils'
+import Session = Models.Session
 
 type createAccountArgs = {
   fullName: string
@@ -12,7 +15,7 @@ type createAccountArgs = {
 
 type verifySecretArgs = {
   accountId: string
-  password: string
+  secret: string
 }
 
 async function getUserByEmail(email: string) {
@@ -32,7 +35,7 @@ function handleError(error: unknown, message: string) {
   throw error
 }
 
-async function sendEmailOTP({ email }: { email: string }) {
+export async function sendEmailOTP({ email }: { email: string }) {
   const { account } = await createAdminClient()
 
   try {
@@ -65,9 +68,9 @@ async function createUser(
 }
 
 export async function createAccount({
-  fullName,
-  email,
-}: createAccountArgs): Promise<{ accountId: string }> {
+                                      fullName,
+                                      email,
+                                    }: createAccountArgs): Promise<{ accountId: string }> {
   const existingUser = await getUserByEmail(email)
   const accountId = await sendEmailOTP({ email })
 
@@ -82,11 +85,24 @@ export async function createAccount({
   return parseStringify({ accountId })
 }
 
-export async function verifySecret({accountId, password}:verifySecretArgs) {
+export async function verifySecret({ accountId, secret }: verifySecretArgs) {
 
   try {
+    const { account } = await createAdminClient()
+    const session: Session = await account.createSession(accountId, secret)
 
-  const {account} = await createAdminClient()
-  } catch()
-    handleEr
+    const nCookies = await cookies()
+
+    nCookies.set('appwrite-session', session.secret, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+    })
+
+    return parseStringify({ sessionId: session.$id })
+  } catch (error) {
+    handleError(error, 'Failed to verify OTP')
+  }
+
 }
